@@ -1,8 +1,10 @@
 using AgendaApp.Server.DTOs;
+using AgendaApp.Server.Models;
 using AgendaApp.Server.Repositories;
 using AgendaApp.Server.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +21,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IContatoRepository, ContatoRepository>();
 builder.Services.AddScoped<IContatoService, ContatoService>();
-
+builder.Services.AddDbContext<AgendaDBContext>(opt =>
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
 
 app.UseDefaultFiles();
