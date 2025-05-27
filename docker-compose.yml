@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: agenda
+      POSTGRES_PASSWORD: agendaPass
+      POSTGRES_DB: AgendaDB
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agenda -d AgendaDB"]
+      interval: 5s
+      retries: 5
+    restart: unless-stopped
+
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: AgendaApp.Server/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbit:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=AgendaDB;Username=agenda;Password=agendaPass
+      - JwtSettings__SecretKey=${JWT_SECRET}
+    ports:
+      - "5000:8080" 
+    restart: unless-stopped
+
+volumes:
+  pgdata:

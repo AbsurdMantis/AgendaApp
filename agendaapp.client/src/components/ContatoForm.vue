@@ -22,7 +22,7 @@
 
   <script setup>
     import { ref } from 'vue';
-    import axios from 'axios';
+    import api from 'axios'
 
     const emit = defineEmits(['contatoCriado'])
 
@@ -50,7 +50,7 @@
       }
       //Validar client
       try {
-        const response = await axios.post('/contatos', form.value)
+        const response = await api.post('/contatos', form.value)
         emit('contatoCriado', response.data)
         form.value = { nome: '', email: '', telefone: '' };
       } catch (e) {

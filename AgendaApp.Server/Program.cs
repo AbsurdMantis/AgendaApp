@@ -4,10 +4,15 @@ using AgendaApp.Server.Repositories;
 using AgendaApp.Server.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var jwtConfig = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtConfig["SecretKey"];
+var keyBytes = Encoding.ASCII.GetBytes(secretKey);
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -23,6 +28,43 @@ builder.Services.AddScoped<IContatoRepository, ContatoRepository>();
 builder.Services.AddScoped<IContatoService, ContatoService>();
 builder.Services.AddDbContext<AgendaDBContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = jwtConfig["Audience"],
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+
+
+});
+
+var CORS = "_CORS";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: CORS, policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -35,7 +77,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors(CORS);
 
 app.UseAuthorization();
 

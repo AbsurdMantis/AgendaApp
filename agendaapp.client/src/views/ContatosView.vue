@@ -16,10 +16,10 @@
   </div>
 </template>
 
-<script>
+<script setup>
   import { onMounted, ref } from 'vue';
   import { useRouter } from 'vue-router';
-  import axios from 'axios';
+  import api from '@/axios'
 
   const router = useRouter();
   const contatos = ref([]);
@@ -32,7 +32,7 @@
 
   const loadContatos = async () => {
     try {
-      const response = await axios.get('/contatos');
+      const response = await api.get('/contatos');
       contatos.value = response.data;
     }
     catch (error) {
@@ -57,7 +57,7 @@
       return;
     }
     try {
-      await axios.delete('/contatos/${id}');
+      await api.delete('/contatos/${id}');
       contatos.value = contatos.value.filter(c => c.id !== id);
     }
     catch(error){
@@ -70,7 +70,7 @@
 
   const logout = () => {
     localStorage.removeItem('token');
-    axios.defaults.headers.common['Authorization'] = null;
+    api.defaults.headers.common['Authorization'] = null;
     router.push('/login');
   };
 </script>

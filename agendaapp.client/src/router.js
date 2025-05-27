@@ -12,4 +12,15 @@ const router = createRouter({
   routes
 });
 
+router.beforeEach((to, from, next) => {
+  const publicPages = ['/login', '/swagger'];
+  const authRequired = !publicPages.some(p => to.path.startsWith(p));
+  const token = localStorage.getItem('token');
+
+  if (authRequired && !token) {
+    return next('/login');
+  }
+  next();
+});
+
 export default router;

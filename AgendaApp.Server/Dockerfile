@@ -22,6 +22,8 @@ RUN dotnet restore "./AgendaApp.Server/AgendaApp.Server.csproj"
 COPY . .
 WORKDIR "/src/AgendaApp.Server"
 RUN dotnet build "./AgendaApp.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN mkdir -p /root/.aspnet/https \
+ && dotnet dev-certs https -ep /root/.aspnet/https/dev.pfx -p pass@word1
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
