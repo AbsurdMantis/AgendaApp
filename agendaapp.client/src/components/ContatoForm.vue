@@ -1,97 +1,86 @@
 <template>
-  <form @submit.prevent="save">
-    <h3>Novo contato</h3>
+  <form class="p-fluid" @submit.prevent="save">
+    <div class="field">
+      <label for="nome">Nome</label>
+      <InputText id="nome"
+                 v-model="form.nome"
+                 :class="{'p-invalid': erros.nome}" />
+      <small v-if="erros.nome" class="p-error">{{ erros.nome }}</small>
+    </div>
 
-    <label>Nome</label>
-    <input v-model="form.nome" type="text" />
-    <span v-if="erros.nome" class="error">{{ erros.nome }}</span>
+    <div class="field">
+      <label for="email">Email</label>
+      <InputText id="email"
+                 v-model="form.email"
+                 :class="{'p-invalid': erros.email}" />
+      <small v-if="erros.email" class="p-error">{{ erros.email }}</small>
+    </div>
 
-    <label>Email</label>
-    <input v-model="form.email" type="email" />
-    <span v-if="erros.email" class="error">{{ erros.email }}</span>
+    <div class="field">
+      <label for="telefone">Telefone</label>
+      <InputText id="telefone"
+                 v-model="form.telefone"
+                 :class="{'p-invalid': erros.telefone}" />
+      <small v-if="erros.telefone" class="p-error">{{ erros.telefone }}</small>
+    </div>
 
-    <label>Telefone</label>
-    <input v-model="form.telefone" type="text" />
-    <span v-if="erros.telefone" class="error">{{ erros.telefone }}</span>
-
-    <div class="actions">
-      <button type="button" @click="$emit('cancel')">Cancelar</button>
-      <button type="submit">Salvar</button>
+    <div class="flex justify-end gap-2 mt-3">
+      <Button label="Cancelar"
+              severity="secondary"
+              type="button"
+              @click="$emit('cancel')" />
+      <Button label="Salvar"
+              icon="pi pi-check"
+              type="submit" />
     </div>
   </form>
 </template>
 
-  <script setup>
-    import { ref } from 'vue';
-    import api from '@/axios'
+<script setup>
+  import { ref } from 'vue';
+  import api from '@/axios';
 
-    const emit = defineEmits(['contatoCriado'])
+  const emit = defineEmits(['contatoCriado', 'cancel']);
 
-    const form = ref({ nome: '', email: '', telefone: '' });
-    const erros = ref({ nome: '', email: '', telefone: '' });
+  const form = ref({ nome: '', email: '', telefone: '' });
+  const erros = ref({ nome: '', email: '', telefone: '' });
 
-    const limparErros = () => {
-      erros.value = { nome: '', email: '', telefone: '' };
-    }
+  const limparErros = () => {
+    erros.value = { nome: '', email: '', telefone: '' };
+  };
 
-    const save = async () => {
-      limparErros()
+  const validar = () => {
+    limparErros();
+    if (!form.value.nome) { erros.value.nome = 'Nome é obrigatório.'; }
+    if (!form.value.email) { erros.value.email = 'Email é obrigatório.'; }
+    if (!form.value.telefone) { erros.value.telefone = 'Telefone é obrigatório.'; }
+    return Object.values(erros.value).some(v => v); 
+  };
 
-      if (!form.value.nome) {
-        erros.value.nome = 'Nome é obrigatório.';
-      }
-      if (!form.value.email) {
-        erros.value.email = 'Email é obrigatório.';
-      }
-      if (!form.value.telefone) {
-        erros.value.telefone = 'Telefone é obrigatório.';
-      }
-      if (erros.value.nome || erros.value.email || erros.value.telefone) {
-        return;
-      }
-      //Validar client
-      try {
-        const response = await api.post('/contatos', form.value)
-        emit('contatoCriado', response.data)
-        form.value = { nome: '', email: '', telefone: '' };
-      } catch (e) {
-        if (e.response && e.response.status == 400) {
-          const data = e.response.data;
+  const save = async () => {
+    if (validar()) { return; }
 
-          if (data.errors) {
-            if (data.errors.Nome) {
-              erros.value.nome = data.errors.Nome[0];
-            }
-            if (data.errors.Email) {
-              erros.value.email = data.errors.Email[0];
-            }
-            if (data.errors.Telefone) {
-              erros.value.telefone = data.errors.Telefone[0];
-            } else if (data.length) {
-              data.forEach(e => {
-                if (e.includes('Nome')) {
-                  erros.value.nome = e;
-                }
-                if (e.includes('Email')) {
-                  erros.value.email = e;
-                }
-                if (e.includes('Telefone')) {
-                  erros.value.telefone = e;
-                }
-              });
-            }
-          } else {
-            console.error("Erro ao salvar contato:", e);
-          }
+    try {
+      const { data } = await api.post('/contatos', form.value);
+      emit('contatoCriado', data);
+      form.value = { nome: '', email: '', telefone: '' };  // limpa
+    } catch (e) {
+      if (e.response?.status === 400) {
+        const d = e.response.data;
+        if (d.errors) {
+          erros.value.nome = d.errors.Nome?.[0] ?? '';
+          erros.value.email = d.errors.Email?.[0] ?? '';
+          erros.value.telefone = d.errors.Telefone?.[0] ?? '';
+        } else if (Array.isArray(d)) {
+          d.forEach(msg => {
+            if (msg.includes('Nome')) { erros.value.nome = msg; }
+            if (msg.includes('Email')) { erros.value.email = msg; }
+            if (msg.includes('Telefone')) { erros.value.telefone = msg; }
+          });
         }
+      } else {
+        console.error('Erro ao salvar contato:', e);
       }
     }
-  </script>
-
-  <style scoped>
-    .error {
-      color: red;
-      font-size: 0.9em;
-    }
-  </style>
-
+  };
+</script>
