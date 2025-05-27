@@ -25,4 +25,52 @@
   const contatos = ref([]);
   const loading = ref(true);
   const token = localStorage.getItem('token');
+
+  if (!token) {
+    router.push('/login')
+  }
+
+  const loadContatos = async () => {
+    try {
+      const response = await axios.get('/contatos');
+      contatos.value = response.data;
+    }
+    catch (error) {
+      console.error("Erro ao carregar contatos:", error);
+      if (error.response && error.response.status === 401) {
+        router.push('/login')
+      }
+    }
+    finally {
+      loading.value = false;
+    }
+  };
+
+  onMounted(loadContatos);
+
+  const onContatoCriado = (newContato) => {
+    contatos.value.push(newContato);
+  };
+
+  const remove = async (id) => {
+    if (!confirm("Excluir contato?")) {
+      return;
+    }
+    try {
+      await axios.delete('/contatos/${id}');
+      contatos.value = contatos.value.filter(c => c.id !== id);
+    }
+    catch(error){
+      console.error("Erro ao excluir:", error);
+      if (error.response && error.response.status === 401) {
+        router.push('/login')
+      }
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    axios.defaults.headers.common['Authorization'] = null;
+    router.push('/login');
+  };
 </script>
