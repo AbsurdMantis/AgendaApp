@@ -1,28 +1,29 @@
 <template>
   <form @submit.prevent="save">
-    <h3>Novo Contato</h3>
-  </form>
-  <div>
-    <label>Nome:</label>
-    <input v-model="form.nome" type="text" />
-    <span class="error" v-if="erros.nome">{{ erros.nome }}</span>
-  </div>
-  <div>
-    <label>Email:</label>
-    <input v-model="form.email" type="email" />
-    <span class="error" v-if="erros.email">{{ erros.email }}</span>
-  </div>
-  <div>
-    <label>Telefone:</label>
-    <input v-model="form.telefone" type="text" />
-    <span class="error" v-if="erros.telefone">{{ erros.telefone }}</span>
-  </div>
+    <h3>Novo contato</h3>
 
+    <label>Nome</label>
+    <input v-model="form.nome" type="text" />
+    <span v-if="erros.nome" class="error">{{ erros.nome }}</span>
+
+    <label>Email</label>
+    <input v-model="form.email" type="email" />
+    <span v-if="erros.email" class="error">{{ erros.email }}</span>
+
+    <label>Telefone</label>
+    <input v-model="form.telefone" type="text" />
+    <span v-if="erros.telefone" class="error">{{ erros.telefone }}</span>
+
+    <div class="actions">
+      <button type="button" @click="$emit('cancel')">Cancelar</button>
+      <button type="submit">Salvar</button>
+    </div>
+  </form>
 </template>
 
   <script setup>
     import { ref } from 'vue';
-    import api from 'axios'
+    import api from '@/axios'
 
     const emit = defineEmits(['contatoCriado'])
 
