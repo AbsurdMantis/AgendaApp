@@ -6,7 +6,7 @@
       Agenda de Contatos
     </template>
     <template #end>
-      <Button label="Novo" icon="pi pi-plus" @click="showNew = true" />
+      <Button label="Novo" icon="pi pi-plus" @click="openNovo" />
       <Button v-if="token"
               label="Sair"
               icon="pi pi-sign-out"
@@ -30,13 +30,17 @@
                 severity="danger"
                 rounded
                 @click="remove(data)" />
+        <Button icon="pi pi-pencil" @click="openEdit(data)" />
       </template>
     </Column>
   </DataTable>
 
-  <Dialog v-model:visible="showNew" header="Novo Contato" modal>
-    <ContatoForm @contatoCriado="addContato"
-                 @cancel="showNew = false" />
+  <Dialog v-model:visible="showDialog"
+          :header="editing ? 'Editar Contato' : 'Novo Contato'"
+          modal>
+    <ContatoForm :contato="editing"
+                 @salvo="salvoHandler"
+                 @cancel="showDialog = false" />
   </Dialog>
 </template>
 
@@ -51,7 +55,6 @@
   const toast = useToast();
   const contatos = ref([]);
   const loading = ref(true);
-  const showNew = ref(false);
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -73,8 +76,25 @@
   const addContato = (novo) => {
     contatos.value.push(novo);
     toast.add({ severity: 'success', summary: 'Contato criado', life: 2000 });
-    showNew.value = false;
   };
+
+  const showDialog = ref(false);
+  const editing = ref(null);
+
+  function openNovo() { editing.value = null; showDialog.value = true; }
+  function openEdit(c) { editing.value = { ...c }; showDialog.value = true; }
+
+  function salvoHandler(resp) {
+    if (editing.value) {
+      const i = contatos.value.findIndex(x => x.id === resp.id);
+      if (i !== -1) contatos.value[i] = resp;
+      toast.add({ severity: 'success', summary: 'Contato atualizado', life: 2000 });
+    } else {
+      contatos.value.push(resp);
+      toast.add({ severity: 'success', summary: 'Contato criado', life: 2000 });
+    }
+    showDialog.value = false;
+  }
 
   const remove = async (contato) => {
     if (!confirm('Excluir contato?')) { return; }

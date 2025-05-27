@@ -37,13 +37,26 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, watch, toRefs } from 'vue';
+  import InputText from 'primevue/inputtext';
+  import Button from 'primevue/button';
   import api from '@/axios';
 
-  const emit = defineEmits(['contatoCriado', 'cancel']);
+  const props = defineProps({
+    contato: { type: Object, default: null }
+  });
+  const emit = defineEmits(['salvo', 'cancel']);
+  const { contato } = toRefs(props);
 
   const form = ref({ nome: '', email: '', telefone: '' });
   const erros = ref({ nome: '', email: '', telefone: '' });
+
+  watch(contato, (c) => {
+    form.value = c
+      ? { ...c }                               
+      : { nome: '', email: '', telefone: '' };     
+  }, { immediate: true });
+
 
   const limparErros = () => {
     erros.value = { nome: '', email: '', telefone: '' };
@@ -51,19 +64,26 @@
 
   const validar = () => {
     limparErros();
-    if (!form.value.nome) { erros.value.nome = 'Nome é obrigatório.'; }
-    if (!form.value.email) { erros.value.email = 'Email é obrigatório.'; }
-    if (!form.value.telefone) { erros.value.telefone = 'Telefone é obrigatório.'; }
-    return Object.values(erros.value).some(v => v); 
+    if (!form.value.nome) erros.value.nome = 'Nome é obrigatório.';
+    if (!form.value.email) erros.value.email = 'Email é obrigatório.';
+    if (!form.value.telefone) erros.value.telefone = 'Telefone é obrigatório.';
+    return Object.values(erros.value).some(v => v);
   };
 
   const save = async () => {
-    if (validar()) { return; }
+    if (validar()) return;
 
     try {
-      const { data } = await api.post('/contatos', form.value);
-      emit('contatoCriado', data);
-      form.value = { nome: '', email: '', telefone: '' };  // limpa
+      let resp;
+      if (contato.value && contato.value.id) {
+        // PUT (edição)
+        resp = await api.put(`/contatos/${contato.value.id}`, form.value);
+      } else {
+        // POST (criação)
+        resp = await api.post('/contatos', form.value);
+      }
+      emit('salvo', resp.data);                 
+      form.value = { nome: '', email: '', telefone: '' }; 
     } catch (e) {
       if (e.response?.status === 400) {
         const d = e.response.data;
@@ -73,9 +93,9 @@
           erros.value.telefone = d.errors.Telefone?.[0] ?? '';
         } else if (Array.isArray(d)) {
           d.forEach(msg => {
-            if (msg.includes('Nome')) { erros.value.nome = msg; }
-            if (msg.includes('Email')) { erros.value.email = msg; }
-            if (msg.includes('Telefone')) { erros.value.telefone = msg; }
+            if (msg.includes('Nome')) erros.value.nome = msg;
+            if (msg.includes('Email')) erros.value.email = msg;
+            if (msg.includes('Telefone')) erros.value.telefone = msg;
           });
         }
       } else {
