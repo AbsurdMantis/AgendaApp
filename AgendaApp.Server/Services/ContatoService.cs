@@ -8,15 +8,17 @@ namespace AgendaApp.Server.Services
 {
     public class ContatoService : IContatoService
     {
+        private readonly IRabbitMQPublisher _publisher;
         private readonly IContatoRepository _repo;
         private readonly IMapper _mapper;
         private readonly IValidator<ContatoDTO> _validator;
 
-        public ContatoService(IContatoRepository repo, IMapper mapper, IValidator<ContatoDTO> validator)
+        public ContatoService(IContatoRepository repo, IMapper mapper, IValidator<ContatoDTO> validator, IRabbitMQPublisher publisher)
         {
             _repo = repo;
             _mapper = mapper;
             _validator = validator;
+            _publisher = publisher;
         }
 
         public async Task<ContatoDTO> AddContatoAsync(ContatoDTO contatoDTO)
@@ -26,6 +28,8 @@ namespace AgendaApp.Server.Services
 
             await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
+
+            await _publisher.PublishEvent(entity, ContatoEventType.ContatoCriado);
 
             return _mapper.Map<ContatoDTO>(entity);
         }
@@ -46,15 +50,17 @@ namespace AgendaApp.Server.Services
 
         public async Task<bool> RemoveContatoAsync(int id)
         {
-            var entitity = await _repo.GetByIdAsync(id);
+            var entity = await _repo.GetByIdAsync(id);
 
             //shortar aqui e add mensagem caso falso
-            if (entitity == null)
+            if (entity == null)
             {
                 return default;
             }
 
-            await _repo.DeleteAsync(entitity);
+            await _repo.DeleteAsync(entity);
+
+            await _publisher.PublishEvent(entity, ContatoEventType.ContatoDeletado);
 
             return await _repo.SaveChangesAsync();
         }
@@ -73,6 +79,7 @@ namespace AgendaApp.Server.Services
             checkEntity.Email = contatoDTO.Email;
             checkEntity.Telefone = contatoDTO.Telefone;
             await _repo.UpdateAsync(checkEntity);
+            await _publisher.PublishEvent(checkEntity, ContatoEventType.ContatoEditado);
 
             return _mapper.Map<ContatoDTO>(checkEntity);
         }

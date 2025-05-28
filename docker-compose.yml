@@ -17,6 +17,9 @@ services:
 
   rabbit:
     image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: agenda
+      RABBITMQ_DEFAULT_PASS: agendaPass
     ports:
       - "15672:15672"
       - "5672:5672"
@@ -38,6 +41,12 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=AgendaDB;Username=agenda;Password=agendaPass
       - JwtSettings__SecretKey=${JWT_SECRET}
+      - RunMigrations=true
+      - RabbitMQ__Host=rabbit
+      - RabbitMQ__Port=5672
+      - RabbitMQ__User=agenda
+      - RabbitMQ__Password=agendaPass
+      - RabbitMQ__Queue=contatos
     ports:
       - "5000:8080" 
     restart: unless-stopped

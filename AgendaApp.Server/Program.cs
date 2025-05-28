@@ -24,6 +24,8 @@ builder.Services.AddFluentValidationAutoValidation()
 builder.Services.AddValidatorsFromAssemblyContaining<ContatoValidator>();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
+builder.Services.AddHostedService<PublisherInitializer>();
 builder.Services.AddScoped<IContatoRepository, ContatoRepository>();
 builder.Services.AddScoped<IContatoService, ContatoService>();
 builder.Services.AddDbContext<AgendaDBContext>(opt =>
@@ -87,8 +89,10 @@ app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
 
-using (var scope = app.Services.CreateScope())
+if (builder.Environment.IsDevelopment() &&
+    builder.Configuration.GetValue<bool>("RunMigrations"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AgendaDBContext>();
     db.Database.Migrate();
 }
