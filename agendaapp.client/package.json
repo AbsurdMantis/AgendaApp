@@ -9,17 +9,17 @@
     "preview": "vite preview",
     "lint": "eslint . --fix"
   },
-    "dependencies": {
-        "primevue": "4.3.4",
-        "primefaces": "14.0.0",
-        "primeicons": "5.0.0",
-        "@primeuix/themes": "1.1.1",
-        "unplugin-vue-components": "28.7.0",
-        "primeflex": "^3.3.1",
-        "vue": "^3.5.13",
-        "vue-router": "^4.5.1",
-        "axios": "^1.9.0"
-    },
+  "dependencies": {
+    "@primeuix/themes": "1.1.1",
+    "axios": "^1.9.0",
+    "primefaces": "14.0.0",
+    "primeflex": "^3.3.1",
+    "primeicons": "5.0.0",
+    "primevue": "4.3.4",
+    "unplugin-vue-components": "28.7.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@vitejs/plugin-vue": "^5.2.3",

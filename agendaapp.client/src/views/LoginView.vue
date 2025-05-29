@@ -1,16 +1,26 @@
 <template>
-  <div class="p-fluid p-formgrid p-grid" style="max-width: 400px; margin: 100px auto;">
-    <h2>Login</h2>
-    <div class="p-field p-col-12">
-      <label for="username">Usuário</label>
-      <InputText v-model="credentials.username" id="username" />
-    </div>
-    <div class="p-field p-col-12">
-      <label for="password">Senha</label>
-      <InputText v-model="credentials.password" type="password" id="password" />
-    </div>
-    <Button label="Entrar" class="p-mt-2" @click="login" />
-    <p v-if="error" style="color: red;">{{ error }}</p>
+  <div class="flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <Card class="shadow-2" style="width: 400px;">
+      <template #title >
+      <p class="mb-3 font-semibold">Login</p>
+      </template>
+      <template #content>
+        <div class="fluid formgrid grid">
+          <div class="field col-12">
+            <label for="username">Usuário</label>
+            <InputText v-model="credentials.username" id="username" class="inputtext-lg block w-full" />
+          </div>
+          <div class="field col-12">
+            <label for="password">Senha</label>
+            <InputText v-model="credentials.password" id="password" type="password" class="inputtext-lg block w-full" />
+          </div>
+          <p v-if="error" class="mt-2 ml-2">{{ error }}</p>
+          <div class="col-12 text-right">
+            <Button label="Entrar" icon="pi pi-sign-in" class="button-lg" @click="login" />
+          </div>
+        </div>
+      </template>
+    </Card>
   </div>
 </template>
 

@@ -1,45 +1,56 @@
 <template>
-  <form class="p-fluid" @submit.prevent="save">
-    <div class="field">
-      <label for="nome">Nome</label>
-      <InputText id="nome"
-                 v-model="form.nome"
-                 :class="{'p-invalid': erros.nome}" />
-      <small v-if="erros.nome" class="p-error">{{ erros.nome }}</small>
+  <form @submit.prevent="save">
+    <div class="grid formgrid">
+      <div class="field col-12 md:col-6">
+        <label for="nome">Nome</label>
+        <InputText id="nome"
+                   v-model="form.nome"
+                   type="text"
+                   class="w-full"
+                   :class="{ invalid: erros.nome }" />
+        <small v-if="erros.nome" class="mt-1 block">
+          {{ erros.nome }}
+        </small>
+      </div>
+
+      <div class="field col-12 md:col-6">
+        <label for="email">Email</label>
+        <InputText id="email"
+                   v-model="form.email"
+                   type="email"
+                   class="w-full"
+                   :class="{ invalid: erros.email }" />
+        <small v-if="erros.email" class="mt-1 block">
+          {{ erros.email }}
+        </small>
+      </div>
+
+      <div class="field col-12 md:col-4">
+        <label for="telefone">Telefone</label>
+        <InputMask id="telefone"
+                   v-model="form.telefone"
+                   mask="(99) 99999-9999"
+                   class="w-full"
+                   :class="{ invalid: erros.telefone }"
+                   slotChar="_" />
+        <small v-if="erros.telefone" class="mt-1 block">
+          {{ erros.telefone }}
+        </small>
+      </div>
     </div>
 
-    <div class="field">
-      <label for="email">Email</label>
-      <InputText id="email"
-                 v-model="form.email"
-                 :class="{'p-invalid': erros.email}" />
-      <small v-if="erros.email" class="p-error">{{ erros.email }}</small>
-    </div>
-
-    <div class="field">
-      <label for="telefone">Telefone</label>
-      <InputText id="telefone"
-                 v-model="form.telefone"
-                 :class="{'p-invalid': erros.telefone}" />
-      <small v-if="erros.telefone" class="p-error">{{ erros.telefone }}</small>
-    </div>
-
-    <div class="flex justify-end gap-2 mt-3">
+    <div class="flex justify-content-end gap-2 mt-4">
       <Button label="Cancelar"
               severity="secondary"
               type="button"
               @click="$emit('cancel')" />
-      <Button label="Salvar"
-              icon="pi pi-check"
-              type="submit" />
+      <Button label="Salvar" icon="pi pi-check" type="submit" />
     </div>
   </form>
 </template>
 
 <script setup>
   import { ref, watch, toRefs } from 'vue';
-  import InputText from 'primevue/inputtext';
-  import Button from 'primevue/button';
   import api from '@/axios';
 
   const props = defineProps({

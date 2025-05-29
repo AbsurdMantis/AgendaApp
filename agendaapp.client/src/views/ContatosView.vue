@@ -3,34 +3,42 @@
 
   <Toolbar class="mb-3">
     <template #start>
-      Agenda de Contatos
+      <h1 class="m-0">Agenda de Contatos</h1>
     </template>
     <template #end>
-      <Button label="Novo" icon="pi pi-plus" @click="openNovo" />
-      <Button v-if="token"
-              label="Sair"
-              icon="pi pi-sign-out"
-              severity="danger"
-              class="ml-2"
-              @click="logout" />
+      <div class="flex gap-2">
+        <Button label="Novo Contato" icon="pi pi-plus" @click="openNovo" />
+        <Button v-if="token"
+                label="Sair"
+                icon="pi pi-sign-out"
+                severity="danger"
+                @click="logout" />
+      </div>
     </template>
   </Toolbar>
 
   <DataTable :value="contatos"
              dataKey="id"
              stripedRows
-             responsiveLayout="scroll">
-    <Column field="nome" header="Nome" />
-    <Column field="email" header="Email" />
-    <Column field="telefone" header="Telefone" />
+             responsiveLayout="scroll"
+             class="shadow-2">
+    <Column field="nome" header="Nome" class="px-2" />
+    <Column field="email" header="Email" class="px-2" />
+    <Column field="telefone" header="Telefone" class="px-2" />
 
-    <Column header="Ações" style="width:8rem">
+    <Column header="Ações" style="width:10rem">
       <template #body="{ data }">
-        <Button icon="pi pi-trash"
-                severity="danger"
-                rounded
-                @click="remove(data)" />
-        <Button icon="pi pi-pencil" @click="openEdit(data)" />
+        <div class="flex align-items-center gap-2">
+          <Button icon="pi pi-trash"
+                  severity="danger"
+                  rounded
+                  class="me-2"
+                  @click="confirmRemove(data)" />
+          <Button icon="pi pi-pencil"
+                  severity="info"
+                  rounded
+                  @click="openEdit(data)" />
+        </div>
       </template>
     </Column>
   </DataTable>
@@ -41,6 +49,17 @@
     <ContatoForm :contato="editing"
                  @salvo="salvoHandler"
                  @cancel="showDialog = false" />
+  </Dialog>
+  <Dialog v-model:visible="showRemoveDialog"
+          header="Remover Contato?"
+          modal
+          :closable="false"
+          :style="{ width: '350px' }">
+    <p>Tem certeza que deseja remover <strong>{{ contatoToRemove?.nome }}</strong>?</p>
+    <template #footer>
+      <Button label="Cancelar" text @click="showRemoveDialog = false" />
+      <Button label="Remover" severity="danger" @click="remove(contatoToRemove)" />
+    </template>
   </Dialog>
 </template>
 
@@ -80,6 +99,8 @@
 
   const showDialog = ref(false);
   const editing = ref(null);
+  const showRemoveDialog = ref(false);
+  const contatoToRemove = ref(null);
 
   function openNovo() { editing.value = null; showDialog.value = true; }
   function openEdit(c) { editing.value = { ...c }; showDialog.value = true; }
@@ -96,8 +117,12 @@
     showDialog.value = false;
   }
 
+  const confirmRemove = (contato) => {
+    contatoToRemove.value = contato;
+    showRemoveDialog.value = true;
+  }
+
   const remove = async (contato) => {
-    if (!confirm('Excluir contato?')) { return; }
     try {
       await api.delete(`/contatos/${contato.id}`);
       contatos.value = contatos.value.filter(c => c.id !== contato.id);
@@ -105,6 +130,9 @@
     } catch (err) {
       console.error('Erro ao excluir:', err);
       if (err.response?.status === 401) { router.push('/login'); }
+    } finally {
+      showRemoveDialog.value = false;
+      contatoToRemove.value = null;
     }
   };
 
