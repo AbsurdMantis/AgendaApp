@@ -42,6 +42,12 @@ export default defineConfig({
       resolvers: [PrimeVueResolver()]
     })
   ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    include: ['tests/**/*.spec.[jt]s?(x)'],
+    setupFiles: 'tests/setupTests.js'
+  },
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))

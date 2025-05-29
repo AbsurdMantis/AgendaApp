@@ -3,20 +3,24 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --fix"
-  },
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "test": "vitest",
+        "preview": "vite preview",
+        "lint": "eslint . --fix"
+    },
   "dependencies": {
     "@primeuix/themes": "1.1.1",
+    "@vue/test-utils": "^2.4.6",
     "axios": "^1.9.0",
+    "jsdom": "^26.1.0",
     "primefaces": "14.0.0",
     "primeflex": "^3.3.1",
     "primeicons": "5.0.0",
     "primevue": "4.3.4",
     "unplugin-vue-components": "28.7.0",
+    "vitest": "^3.1.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1"
   },
